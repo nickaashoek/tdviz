@@ -1,4 +1,4 @@
-package formula
+package formulaparser
 
 import (
 	"strings"

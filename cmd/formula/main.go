@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"nickaashoek/tdviz/pkg/formula-parser"
+	formula "nickaashoek/tdviz/pkg/parser"
 
 	"github.com/timtadh/lexmachine"
 )
