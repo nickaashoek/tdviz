@@ -41,7 +41,8 @@ func initTokens() {
 	Keywords = []string{}
 
 	Tokens = []string{
-		"ID",
+		"START",
+		"END",
 	}
 
 	Tokens = append(Tokens, Literals...)
@@ -82,7 +83,8 @@ func setupLexer() (*lexmachine.Lexer, error) {
 	// Add rule for variables. Single character, including subscript, and/or prime
 	// Regular expression used: [A-Za-z](_[0-9]*)?'?
 	// Can use any alpha char for variable, optional subscript, optional prime
-	lexer.Add([]byte(`[A-Za-z](_[0-9]*)?'?`), token("ID"))
+	lexer.Add([]byte(`[A-Za-z](_[0-9]*)?`), token("START"))
+	lexer.Add([]byte(`[A-Za-z](_[0-9]*)?'?`), token("END"))
 	lexer.Add([]byte("( |\t|\n|\r)+"), skip)
 
 	err := lexer.Compile()
