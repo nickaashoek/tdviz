@@ -40,36 +40,37 @@ func (r *ROBDDTransitionWalker) EnterStart(c *parser.StartContext) {
 	fmt.Printf("ROBDD at start of walk %v\n", r.BddManager)
 }
 
-// EnterExpression is called when entering the expression production.
-func (r *ROBDDTransitionWalker) EnterExpression(c *parser.ExpressionContext) {
-}
-
-// EnterOperator is called when entering the operator production.
-func (r *ROBDDTransitionWalker) EnterOperator(c *parser.OperatorContext) {
-
-}
-
-// EnterIdentifier is called when entering the identifier production.
-func (r *ROBDDTransitionWalker) EnterIdentifier(c *parser.IdentifierContext) {
-}
-
-// EnterBl is called when entering the bl production.
-func (r *ROBDDTransitionWalker) EnterBl(c *parser.BlContext) {
-}
-
 // ExitStart is called when exiting the start production.
 func (r *ROBDDTransitionWalker) ExitStart(c *parser.StartContext) {
 	fmt.Println("Exiting Start")
-	r.Result = r.BddManager.Nodes[0]
+	r.Result = r.BddManager.Nodes[r.pop()]
+}
+
+func (r *ROBDDTransitionWalker) ExitNotExpression(c *parser.NotExpressionContext) {
+	fmt.Printf("Exiting the not expression %v\n", c.GetText())
+	argument := r.pop()
+	result := r.BddManager.Not(argument)
+	r.push(result)
 }
 
 // ExitExpression is called when exiting the expression production.
-func (r *ROBDDTransitionWalker) ExitExpression(c *parser.ExpressionContext) {
-	fmt.Printf("Hit expression %v\n", c.GetText())
-}
+func (r *ROBDDTransitionWalker) ExitOpExpression(c *parser.OpExpressionContext) {
+	fmt.Printf("Hit op expression %v\n", c.GetText())
+	operator := c.GetOP().(*parser.OperatorContext)
 
-// ExitOperator is called when exiting the operator production.
-func (r *ROBDDTransitionWalker) ExitOperator(c *parser.OperatorContext) {
+	right := r.pop()
+	left := r.pop()
+
+	if operator.AND() != nil {
+		result := r.BddManager.And(left, right)
+		r.push(result)
+	} else if operator.OR() != nil {
+		fmt.Printf("%v Not implemented\n", c.GetText())
+	} else if operator.IMPL() != nil {
+		fmt.Printf("%v Not implemented\n", c.GetText())
+	} else if operator.DOUBLIMPL() != nil {
+		fmt.Printf("%v Not implemented\n", c.GetText())
+	}
 }
 
 // ExitIdentifier is called when exiting the identifier production.
@@ -79,9 +80,4 @@ func (r *ROBDDTransitionWalker) ExitIdentifier(c *parser.IdentifierContext) {
 	result := r.BddManager.MakeNode(propOrder, r.BddManager.Lo, r.BddManager.Hi)
 	fmt.Printf("Pushed node %v onto stack\n", r.BddManager.Nodes[result])
 	r.push(result)
-}
-
-// ExitBl is called when exiting the bl production.
-func (r *ROBDDTransitionWalker) ExitBl(c *parser.BlContext) {
-	fmt.Printf("Hit boolean endpoint %v\n", c.GetText())
 }

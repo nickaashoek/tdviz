@@ -23,7 +23,7 @@ func (n *ROBDDNode) IsLo() bool {
 }
 
 func (n ROBDDNode) String() string {
-	return fmt.Sprintf("Node w/ Prop = %v, Lo = %v, Hi = %v", n.Prop, n.Lo, n.Hi)
+	return fmt.Sprintf("| Node %v, %v,%v ", n.Prop, n.Lo, n.Hi)
 }
 
 func HiTerminal() ROBDDNode {
@@ -53,25 +53,25 @@ type ROBDD struct {
 	Hi    int
 }
 
-func (r *ROBDD) InitROBDD() {
-	r.Cache = make(map[string]int)
-	r.MakeNode(-2, -2, 0)
-	r.MakeNode(-1, -1, 0)
-	r.Lo = 0
-	r.Hi = 1
+func (rbd *ROBDD) InitROBDD() {
+	rbd.Cache = make(map[string]int)
+	rbd.MakeNode(-2, -2, 0)
+	rbd.MakeNode(-1, -1, 0)
+	rbd.Lo = 0
+	rbd.Hi = 1
 }
 
-func (r *ROBDD) NewProp(p int) int {
-	return r.MakeNode(p, r.Lo, r.Hi)
+func (rbd *ROBDD) NewProp(p int) int {
+	return rbd.MakeNode(p, rbd.Lo, rbd.Hi)
 }
 
-func (r *ROBDD) MakeNode(p, l, h int) int {
+func (rbd *ROBDD) MakeNode(p, l, h int) int {
 	// fmt.Printf("Making node %v %v %v\n", p, l, h)
 	if l == h {
 		return l
 	}
 	// fmt.Printf("PLHHash %v\n", PLHHash(p, l, h))
-	if val, ok := r.Cache[PLHHash(p, l, h)]; ok {
+	if val, ok := rbd.Cache[PLHHash(p, l, h)]; ok {
 		return val
 	} else {
 		res := ROBDDNode{
@@ -80,40 +80,55 @@ func (r *ROBDD) MakeNode(p, l, h int) int {
 			Hi:   h,
 		}
 		// fmt.Printf("Appending %v\n", res)
-		r.Nodes = append(r.Nodes, res)
-		r.Cache[res.Hash()] = len(r.Nodes) - 1
-		return len(r.Nodes) - 1
+		rbd.Nodes = append(rbd.Nodes, res)
+		rbd.Cache[res.Hash()] = len(rbd.Nodes) - 1
+		return len(rbd.Nodes) - 1
 	}
 }
 
-func (r *ROBDD) Not() {
+func (rbd *ROBDD) Not(n int) int {
+	node := rbd.Nodes[n]
 
+	if node.IsHi() {
+		return 0
+	} else if node.IsLo() {
+		return 1
+	} else {
+		return rbd.MakeNode(
+			node.Prop,
+			rbd.Not(node.Lo),
+			rbd.Not(node.Hi),
+		)
+	}
 }
 
-func (r *ROBDD) And(left ROBDDNode, right ROBDDNode) int {
+func (rbd *ROBDD) And(l, r int) int {
+	left := rbd.Nodes[l]
+	right := rbd.Nodes[r]
+
 	if left.IsLo() || right.IsLo() {
-		return r.Lo
+		return rbd.Lo
 	} else if left.IsHi() {
-		return r.Cache[right.Hash()]
+		return rbd.Cache[right.Hash()]
 	} else if right.IsHi() {
-		return r.Cache[left.Hash()]
+		return rbd.Cache[left.Hash()]
 	} else if left.Prop == right.Prop {
-		return r.MakeNode(
+		return rbd.MakeNode(
 			left.Prop,
-			r.And(r.Nodes[left.Lo], r.Nodes[right.Lo]),
-			r.And(r.Nodes[left.Hi], r.Nodes[right.Hi]),
+			rbd.And(left.Lo, right.Lo),
+			rbd.And(left.Hi, right.Hi),
 		)
 	} else if left.Prop < right.Prop {
-		return r.MakeNode(
+		return rbd.MakeNode(
 			left.Prop,
-			r.And(r.Nodes[left.Lo], right),
-			r.And(r.Nodes[left.Hi], right),
+			rbd.And(left.Lo, r),
+			rbd.And(left.Hi, r),
 		)
 	} else {
-		return r.MakeNode(
+		return rbd.MakeNode(
 			right.Prop,
-			r.And(left, r.Nodes[right.Lo]),
-			r.And(left, r.Nodes[right.Hi]),
+			rbd.And(l, right.Lo),
+			rbd.And(l, right.Hi),
 		)
 	}
 
@@ -131,6 +146,6 @@ func (r *ROBDD) And(left ROBDDNode, right ROBDDNode) int {
 
 // }
 
-func (r ROBDD) String() string {
-	return fmt.Sprintf("ROBDD Structure\n\tNodes: %v\n\tCache: %v", r.Nodes, r.Cache)
+func (rbd ROBDD) String() string {
+	return fmt.Sprintf("ROBDD Structure\n\tNodes: %v\n\tCache: %v", rbd.Nodes, rbd.Cache)
 }
