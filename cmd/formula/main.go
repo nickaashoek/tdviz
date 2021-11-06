@@ -2,34 +2,44 @@ package main
 
 import (
 	"fmt"
-	"log"
-	formula "nickaashoek/tdviz/pkg/parser"
+	"nickaashoek/tdviz/pkg/parser"
+	"nickaashoek/tdviz/pkg/robdd"
+	"regexp"
+	"sort"
 
-	"github.com/timtadh/lexmachine"
+	"github.com/antlr/antlr4/runtime/Go/antlr"
 )
 
 func main() {
 	testFormula := `(p' <-> (p | q)) & (q | q') & !(q' & q) & !(q & r & r') & (r' -> (p | q | r))`
-	fmt.Println("Parsing formula", testFormula)
 
-	// insert formula here
-	s, err := formula.Lexer.Scanner([]byte(testFormula))
-	if err != nil {
-		log.Fatal(err)
+	testFormula = `(q' & p)`
+
+	varPattern := `[A-Za-z]`
+
+	varRE := regexp.MustCompile(varPattern)
+
+	props := varRE.FindAllString(testFormula, -1)
+	sort.Strings(props)
+	fmt.Printf("Starts: %v\n", props)
+
+	order := make(map[string]int)
+
+	for _, prop := range props {
+		order[prop] = len(order)
+		order[prop+"'"] = len(order)
 	}
-	fmt.Println("Type    | Lexeme     | Position")
-	fmt.Println("--------+------------+------------")
-	for tok, err, eof := s.Next(); !eof; tok, err, eof = s.Next() {
-		if err != nil {
-			log.Fatal(err)
-		}
-		token := tok.(*lexmachine.Token)
-		fmt.Printf("%-7v | %-10v | %v:%v-%v:%v\n",
-			formula.Tokens[token.Type],
-			string(token.Lexeme),
-			token.StartLine,
-			token.StartColumn,
-			token.EndLine,
-			token.EndColumn)
-	}
+
+	fmt.Printf("Parsing formula %v with order %v\n", testFormula, order)
+
+	input := antlr.NewInputStream(testFormula)
+	lexer := parser.NewTransitionsLexer(input)
+
+	stream := antlr.NewCommonTokenStream(lexer, 0)
+
+	p := parser.NewTransitionsParser(stream)
+	p.AddErrorListener(antlr.NewDiagnosticErrorListener(true))
+	p.BuildParseTrees = true
+
+	antlr.ParseTreeWalkerDefault.Walk(&robdd.ROBDDTransitionWalker{PropOrder: order}, p.Start())
 }
