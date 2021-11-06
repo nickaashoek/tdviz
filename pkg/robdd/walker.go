@@ -36,6 +36,12 @@ func (tw *ROBDDTransitionWalker) pop() int {
 
 // EnterStart is called when entering the start production.
 func (r *ROBDDTransitionWalker) EnterStart(c *parser.StartContext) {
+	revOrder := make(map[int]string)
+	for k, v := range r.PropOrder {
+		revOrder[v] = k
+	}
+
+	r.BddManager.RevOrder = revOrder
 	r.BddManager.InitROBDD()
 	fmt.Printf("ROBDD at start of walk %v\n", r.BddManager)
 }
@@ -65,11 +71,14 @@ func (r *ROBDDTransitionWalker) ExitOpExpression(c *parser.OpExpressionContext) 
 		result := r.BddManager.And(left, right)
 		r.push(result)
 	} else if operator.OR() != nil {
-		fmt.Printf("%v Not implemented\n", c.GetText())
+		result := r.BddManager.Or(left, right)
+		r.push(result)
 	} else if operator.IMPL() != nil {
-		fmt.Printf("%v Not implemented\n", c.GetText())
+		result := r.BddManager.Implies(left, right)
+		r.push(result)
 	} else if operator.DOUBLIMPL() != nil {
-		fmt.Printf("%v Not implemented\n", c.GetText())
+		result := r.BddManager.Iff(left, right)
+		r.push(result)
 	}
 }
 

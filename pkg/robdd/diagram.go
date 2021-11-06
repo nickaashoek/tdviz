@@ -47,10 +47,11 @@ func PLHHash(p, l, h int) string {
 }
 
 type ROBDD struct {
-	Nodes []ROBDDNode
-	Cache map[string]int
-	Lo    int
-	Hi    int
+	Nodes    []ROBDDNode
+	Cache    map[string]int
+	RevOrder map[int]string
+	Lo       int
+	Hi       int
 }
 
 func (rbd *ROBDD) InitROBDD() {
@@ -131,21 +132,55 @@ func (rbd *ROBDD) And(l, r int) int {
 			rbd.And(l, right.Hi),
 		)
 	}
-
 }
 
-// func (r *ROBDD) Or(root *ROBDDNode) {
+func (rbd *ROBDD) Or(l, r int) int {
+	left := rbd.Nodes[l]
+	right := rbd.Nodes[r]
 
-// }
+	if left.IsHi() || right.IsHi() {
+		return rbd.Hi
+	} else if left.IsLo() {
+		return rbd.Cache[right.Hash()]
+	} else if right.IsLo() {
+		return rbd.Cache[left.Hash()]
+	} else if left.Prop == right.Prop {
+		return rbd.MakeNode(
+			left.Prop,
+			rbd.Or(left.Lo, right.Lo),
+			rbd.Or(left.Hi, right.Hi),
+		)
+	} else if left.Prop < right.Prop {
+		return rbd.MakeNode(
+			left.Prop,
+			rbd.Or(left.Lo, r),
+			rbd.Or(left.Hi, r),
+		)
+	} else {
+		return rbd.MakeNode(
+			right.Prop,
+			rbd.Or(l, right.Lo),
+			rbd.Or(l, right.Hi),
+		)
+	}
+}
 
-// func (r *ROBDD) Implies(r2 *ROBDD) {
+func (rbd *ROBDD) Implies(l, r int) int {
+	not_l := rbd.Not(l)
+	return rbd.Or(not_l, r)
+}
 
-// }
-
-// func (r *ROBDD) Iff(r2 *ROBDD) {
-
-// }
+func (rbd *ROBDD) Iff(l, r int) int {
+	left_direction := rbd.Implies(l, r)
+	right_direction := rbd.Implies(r, l)
+	return rbd.And(left_direction, right_direction)
+}
 
 func (rbd ROBDD) String() string {
-	return fmt.Sprintf("ROBDD Structure\n\tNodes: %v\n\tCache: %v", rbd.Nodes, rbd.Cache)
+	nodeString := "Nodes: "
+	for i, node := range rbd.Nodes {
+		nodeString += fmt.Sprintf("\n\t\t%v: | %v, %v, %v", i, rbd.RevOrder[node.Prop], node.Lo, node.Hi)
+	}
+
+	return fmt.Sprintf("ROBDD Structure\n\tNodes: %v\n\tCache: %v", nodeString, rbd.Cache)
 }

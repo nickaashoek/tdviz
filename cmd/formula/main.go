@@ -13,7 +13,9 @@ import (
 func main() {
 	testFormula := `(p' <-> (p | q)) & (q | q') & !(q' & q) & !(q & r & r') & (r' -> (p | q | r))`
 
-	testFormula = `(p & q)`
+	testFormula = `(p -> (q | r)) & !(q & r)`
+
+	// testFormula = `(p <-> q)`
 
 	varPattern := `[A-Za-z]`
 
