@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"nickaashoek/tdviz/pkg/parser"
 	"nickaashoek/tdviz/pkg/robdd"
@@ -14,7 +15,7 @@ import (
 func main() {
 	testFormula := `(p' <-> (p | q)) & (q | q') & !(q' & q) & !(q & r & r') & (r' -> (p | q | r))`
 
-	testFormula = `(p -> (q | r)) & !(q & r)`
+	// testFormula = `(p -> (q | r)) & !(q & r)`
 
 	// testFormula = `(p <-> q)`
 
@@ -60,5 +61,9 @@ func main() {
 
 	inverseIndex := transitions.BFSInverseIndex(&walker.BddManager, walker.Result)
 	fmt.Println(inverseIndex)
-	transitions.GenerateAllValidTransitions(&walker.BddManager, walker.Result)
+	allTransitions := transitions.GenerateAllValidTransitions(&walker.BddManager, walker.Result, order)
+	// Use the below line to have compact json
+	// jsonified, _ := json.Marshal(allTransitions)
+	jsonified, _ := json.MarshalIndent(allTransitions, "", "  ")
+	fmt.Printf("As json string, all transitions: %s\n", jsonified)
 }
