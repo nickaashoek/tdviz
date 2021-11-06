@@ -14,37 +14,6 @@ type JsonIntermediate struct {
 	AllNodes []ROBDDNode    `json:"AllNodes"`
 }
 
-type intQueue struct {
-	queue []int
-}
-
-func (i *intQueue) Push(x int) {
-	i.queue = append(i.queue, x)
-}
-
-func (i *intQueue) Pop() int {
-	x := i.queue[0]
-	i.queue = i.queue[1:]
-	return x
-}
-
-func (i intQueue) Full() bool {
-	return len(i.queue) > 0
-}
-
-func (rbd *ROBDD) BFSRoot(root int) {
-	queue := intQueue{}
-	queue.Push(root)
-	for queue.Full() {
-		elem := queue.Pop()
-		if elem > 1 {
-			node := rbd.Nodes[elem]
-			queue.Push(node.Lo)
-			queue.Push(node.Hi)
-		}
-	}
-}
-
 func BddToIntermediate(rbd *ROBDD, root int, order map[string]int) JsonIntermediate {
 	result := JsonIntermediate{}
 	// result.Nodes = make([]ROBDDNode, 0)
