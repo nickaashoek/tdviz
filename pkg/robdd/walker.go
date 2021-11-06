@@ -11,7 +11,7 @@ type ROBDDTransitionWalker struct {
 	PropOrder map[string]int
 
 	BddManager ROBDD
-	Result     ROBDDNode
+	Result     int
 
 	OperandQueue []int
 }
@@ -49,7 +49,7 @@ func (r *ROBDDTransitionWalker) EnterStart(c *parser.StartContext) {
 // ExitStart is called when exiting the start production.
 func (r *ROBDDTransitionWalker) ExitStart(c *parser.StartContext) {
 	fmt.Println("Exiting Start")
-	r.Result = r.BddManager.Nodes[r.pop()]
+	r.Result = r.pop()
 }
 
 func (r *ROBDDTransitionWalker) ExitNotExpression(c *parser.NotExpressionContext) {

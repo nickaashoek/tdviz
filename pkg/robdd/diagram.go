@@ -5,9 +5,9 @@ import "fmt"
 type ROBDDNode struct {
 	// Lo is -2
 	// Hi is -1
-	Prop int
-	Lo   int
-	Hi   int
+	Prop int `json:"Prop"`
+	Lo   int `json:"Lo"`
+	Hi   int `json:"Hi"`
 }
 
 func (n *ROBDDNode) Hash() string {

@@ -13,9 +13,11 @@ import (
 func main() {
 	testFormula := `(p' <-> (p | q)) & (q | q') & !(q' & q) & !(q & r & r') & (r' -> (p | q | r))`
 
-	testFormula = `(p -> (q | r)) & !(q & r)`
+	// testFormula = `(p -> (q | r)) & !(q & r)`
 
 	// testFormula = `(p <-> q)`
+
+	testFormula = `p & q`
 
 	varPattern := `[A-Za-z]`
 
@@ -49,6 +51,9 @@ func main() {
 	// antlr.ParseTreeWalkerDefault.Walk(&robdd.ROBDDTransitionWalker{}, p.Start())
 	walker := &robdd.ROBDDTransitionWalker{PropOrder: order}
 	antlr.ParseTreeWalkerDefault.Walk(walker, p.Start())
-	fmt.Printf("After parsing, result is %v\n", walker.Result)
+	fmt.Printf("After parsing, result is %v\n", walker.BddManager.Nodes[walker.Result])
 	fmt.Printf("Full ROBDD Structure is %v\n", walker.BddManager)
+
+	dumper := robdd.BddToIntermediate(&walker.BddManager, walker.Result, order)
+	robdd.DumpIntermediate(&dumper)
 }
