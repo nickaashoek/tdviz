@@ -1,7 +1,6 @@
 package robdd
 
 import (
-	"fmt"
 	"nickaashoek/tdviz/pkg/parser"
 )
 
@@ -43,17 +42,17 @@ func (r *ROBDDTransitionWalker) EnterStart(c *parser.StartContext) {
 
 	r.BddManager.RevOrder = revOrder
 	r.BddManager.InitROBDD()
-	fmt.Printf("ROBDD at start of walk %v\n", r.BddManager)
+	// fmt.Printf("ROBDD at start of walk %v\n", r.BddManager)
 }
 
 // ExitStart is called when exiting the start production.
 func (r *ROBDDTransitionWalker) ExitStart(c *parser.StartContext) {
-	fmt.Println("Exiting Start")
+	// fmt.Println("Exiting Start")
 	r.Result = r.pop()
 }
 
 func (r *ROBDDTransitionWalker) ExitNotExpression(c *parser.NotExpressionContext) {
-	fmt.Printf("Exiting the not expression %v\n", c.GetText())
+	// fmt.Printf("Exiting the not expression %v\n", c.GetText())
 	argument := r.pop()
 	result := r.BddManager.Not(argument)
 	r.push(result)
@@ -61,7 +60,7 @@ func (r *ROBDDTransitionWalker) ExitNotExpression(c *parser.NotExpressionContext
 
 // ExitExpression is called when exiting the expression production.
 func (r *ROBDDTransitionWalker) ExitOpExpression(c *parser.OpExpressionContext) {
-	fmt.Printf("Hit op expression %v\n", c.GetText())
+	// fmt.Printf("Hit op expression %v\n", c.GetText())
 	operator := c.GetOP().(*parser.OperatorContext)
 
 	right := r.pop()
@@ -85,8 +84,8 @@ func (r *ROBDDTransitionWalker) ExitOpExpression(c *parser.OpExpressionContext) 
 // ExitIdentifier is called when exiting the identifier production.
 func (r *ROBDDTransitionWalker) ExitIdentifier(c *parser.IdentifierContext) {
 	propOrder := r.PropOrder[c.GetText()]
-	fmt.Printf("Hit identifier %v (%v)\n", c.GetText(), propOrder)
+	// fmt.Printf("Hit identifier %v (%v)\n", c.GetText(), propOrder)
 	result := r.BddManager.MakeNode(propOrder, r.BddManager.Lo, r.BddManager.Hi)
-	fmt.Printf("Pushed node %v onto stack\n", r.BddManager.Nodes[result])
+	// fmt.Printf("Pushed node %v onto stack\n", r.BddManager.Nodes[result])
 	r.push(result)
 }

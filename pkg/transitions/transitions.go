@@ -210,15 +210,15 @@ func GenerateAllValidTransitions(rbd *robdd.ROBDD, root int, order map[string]in
 	for i, _ := range results {
 		results[i] = append(results[i], 1)
 	}
-	fmt.Printf("Results of all valid transitions: %v\n", results)
+	// fmt.Printf("Results of all valid transitions: %v\n", results)
 	paths := make([]map[string]int, 0)
 	for _, result := range results {
 		values := PropValuesFromPath(rbd, result)
-		fmt.Printf("Path %v represents %v\n", result, values)
+		// fmt.Printf("Path %v represents %v\n", result, values)
 		// fmt.Printf("\tWhich corresponds to state transition %v\n", PropValuesToStateTransition(values, order))
 		paths = append(paths, values)
 	}
 	transitions := CreateStateTransitions(rbd, results, order)
-	fmt.Printf("All transitions: %v\n", transitions)
+	// fmt.Printf("All transitions: %v\n", transitions)
 	return transitions
 }
