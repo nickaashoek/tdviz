@@ -44,6 +44,8 @@ func findPropsInFormula(formula string) map[string]int {
 }
 
 func HandleFormula(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	fmt.Println("[BACKEND] Got a request for handling a formula")
 
 	body, _ := ioutil.ReadAll(r.Body)
