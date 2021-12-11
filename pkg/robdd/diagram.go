@@ -166,8 +166,8 @@ func (rbd *ROBDD) Or(l, r int) int {
 }
 
 func (rbd *ROBDD) Implies(l, r int) int {
-	not_l := rbd.Not(l)
-	return rbd.Or(not_l, r)
+	or_i := rbd.Or(l, r)
+	return rbd.Not(or_i)
 }
 
 func (rbd *ROBDD) Iff(l, r int) int {
